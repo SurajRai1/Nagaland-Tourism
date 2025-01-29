@@ -70,8 +70,10 @@ const EighthSection = () => {
     ? galleryImages 
     : galleryImages.filter(img => img.category === selectedCategory)
 
-  // Add navigation function
+  // Add navigation function with null check
   const navigateImage = (direction: 'next' | 'prev') => {
+    if (!selectedImage) return
+
     const currentIndex = filteredImages.findIndex(img => img.id === selectedImage.id)
     if (direction === 'next') {
       const nextImage = filteredImages[currentIndex + 1] || filteredImages[0]
@@ -90,13 +92,9 @@ const EighthSection = () => {
       if (e.key === 'Escape') {
         setSelectedImage(null)
       } else if (e.key === 'ArrowRight') {
-        const currentIndex = filteredImages.findIndex(img => img.id === selectedImage.id)
-        const nextImage = filteredImages[currentIndex + 1] || filteredImages[0]
-        setSelectedImage(nextImage)
+        navigateImage('next')
       } else if (e.key === 'ArrowLeft') {
-        const currentIndex = filteredImages.findIndex(img => img.id === selectedImage.id)
-        const prevImage = filteredImages[currentIndex - 1] || filteredImages[filteredImages.length - 1]
-        setSelectedImage(prevImage)
+        navigateImage('prev')
       }
     }
 
@@ -204,14 +202,13 @@ const EighthSection = () => {
                   onClick={() => setSelectedImage(image)}
                 >
                   <div className="absolute inset-0 bg-gradient-to-br from-amber-100 to-amber-50">
-                    {/* Replace with actual image once available */}
-                    {/* <Image
+                    <Image
                       src={image.src}
                       alt={image.alt}
                       fill
                       className="object-cover transition-transform duration-500
                                group-hover:scale-110"
-                    /> */}
+                    />
                   </div>
                   <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 
                                 transition-colors duration-500" />
@@ -237,24 +234,32 @@ const EighthSection = () => {
       {/* Lightbox */}
       <AnimatePresence>
         {selectedImage && (
-          <div 
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4 sm:p-8"
             onClick={() => setSelectedImage(null)}
           >
+            {/* Close button */}
             <button 
               className="absolute top-4 right-4 z-50 p-2 text-white hover:text-amber-500 transition-colors"
-              onClick={() => setSelectedImage(null)}
+              onClick={(e) => {
+                e.stopPropagation()
+                setSelectedImage(null)
+              }}
             >
               <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
 
-            <button 
-              className="absolute left-4 sm:left-8 z-50 p-4 text-white hover:text-amber-500 transition-colors"
+            {/* Navigation buttons */}
+            <button
+              className="absolute left-4 top-1/2 -translate-y-1/2 p-2 text-white hover:text-amber-500 transition-colors"
               onClick={(e) => {
-                e.stopPropagation();
-                navigateImage('prev');
+                e.stopPropagation()
+                navigateImage('prev')
               }}
             >
               <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -262,30 +267,29 @@ const EighthSection = () => {
               </svg>
             </button>
 
-            <div className="relative w-full h-full max-h-[80vh] flex flex-col items-center justify-center">
-              <img
-                src={selectedImage.src}
-                alt={selectedImage.alt}
-                className="max-w-full max-h-full object-contain"
-              />
-              <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 text-center bg-gradient-to-t from-black/80 to-transparent">
-                <h3 className="text-xl sm:text-2xl font-medium text-white mb-2">{selectedImage.alt}</h3>
-                <p className="text-amber-500">{selectedImage.category}</p>
-              </div>
-            </div>
-
-            <button 
-              className="absolute right-4 sm:right-8 z-50 p-4 text-white hover:text-amber-500 transition-colors"
+            <button
+              className="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-white hover:text-amber-500 transition-colors"
               onClick={(e) => {
-                e.stopPropagation();
-                navigateImage('next');
+                e.stopPropagation()
+                navigateImage('next')
               }}
             >
               <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </button>
-          </div>
+
+            {/* Image */}
+            <div className="relative w-full max-w-4xl aspect-[4/3]">
+              <Image
+                src={selectedImage.src}
+                alt={selectedImage.alt}
+                fill
+                className="object-contain"
+                priority
+              />
+            </div>
+          </motion.div>
         )}
       </AnimatePresence>
     </>
